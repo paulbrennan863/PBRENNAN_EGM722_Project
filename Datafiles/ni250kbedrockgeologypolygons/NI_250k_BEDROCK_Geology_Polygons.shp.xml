@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata xml:lang="en"><Esri><CreaDate>20130814</CreaDate><CreaTime>17060700</CreaTime><ArcGISFormat>1.0</ArcGISFormat><SyncOnce>TRUE</SyncOnce><DataProperties><lineage><Process ToolSource="c:\program files\arcgis\desktop10.1\ArcToolbox\Toolboxes\Data Management Tools.tbx\RepairGeometry" Date="20130814" Time="170607">RepairGeometry W:\PP\CartoSouth\Data\NI_Geo250k\2013\arc_IrishNG\NI_250k_BEDROCK_Geology_Polygons.shp DELETE_NULL</Process></lineage></DataProperties></Esri></metadata>

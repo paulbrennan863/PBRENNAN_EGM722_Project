@@ -1,18 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Fleet xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.aemp.org/fleet"   snapshotTime="2025-03-23T13:00:53.0000568+00:00" version="0">
+<Fleet xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+       xmlns="http://schemas.aemp.org/fleet"
+       snapshotTime="2025-03-23T13:00:53.0000568+00:00" 
+       version="0">
+
     <Equipment>
         <EquipmentHeader>
-            <UnitInstallDateTime>2022-03-08T16: 31: 44.0000000+00: 00</UnitInstallDateTime>
+            <UnitInstallDateTime>2022-03-08T16:31:44.0000000+00:00</UnitInstallDateTime>
             <OEMName>Ecotec</OEMName>
             <Model>TDS820E</Model>
             <EquipmentID>TRXPBTEST29876534</EquipmentID>
             <SerialNumber>TRXPBTEST29876534</SerialNumber>
         </EquipmentHeader>
-…        </EquipmentHeader>
+
         <Location datetime="2025-02-04T23:39:13.0000000+00:00">
             <Latitude>54.533596</Latitude>
             <Longitude>-6.8156395</Longitude>
         </Location>
     </Equipment>
+
     <PageInfo PageSize="500" RecordsCount="18" HasNext="false" NextPageNo="-1"/>
 </Fleet>
