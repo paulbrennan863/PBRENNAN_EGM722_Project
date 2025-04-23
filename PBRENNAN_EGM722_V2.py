@@ -19,30 +19,126 @@ xmlfilename = "" #preload with xml test filename
 machine_data = []  # global list for parsed xml data
 
 
+#create the main GUI window
+def CreateGUIframe():
+    """
+       Initializes and configures the main Tkinter GUI window for the AEMP 2.0 Machine Viewer application.
+        GUI size is set for 1500 x 300 pixels.
+        Keeping the window always on top, so it is always seen.
 
-def create_folium_map():
-    global m # let function know it is the global map instance being called
-    m = folium.Map(location=[54.6, -7], zoom_start=9) # centre the map around Northern Ireland
-    mini_map = MiniMap()
-    m.add_child(mini_map)
+       It also creates a `Frame` widget within the GUI window `machinedataframe` for displaying
+       the machine data, and places it at a fixed position with a visible border.
+
+       Returns:
+           None
+       """
+    gui.title('AEMP 2.0 Machine Viewer')
+    gui.resizable(False, False)
+    gui.geometry('1500x300')
+    gui.attributes('-topmost', True) #make sure the GUI fram is on top to ensure it is seen
+
+    machinedataframe=tk.Frame(gui,borderwidth=2, relief=tk.RIDGE)
+    machinedataframe.place(x=10, y=50, height=220, width=1450)
+
+def gui_on_closing():
+    """
+       Handles the closing event when the user clicks the 'X' button on the application window.
+       The user is promoted with a confirmation to close messagebox before closing the application. If the user confirms,
+       it gracefully terminates the application by calling `gui.destroy()`.
+
+       Returns:
+           None
+       """
+    if mb.askokcancel("Quit", "Do you really want to quit?"):
+        gui.destroy()  # This unloads the application window
+
+
+
+def CreateGUIfileopenbutton():
+    """
+        Creates and places a 'File Open' button on the main GUI window.
+
+        This button allows the user to select and open an AEMP 2.0 XML file.
+        When clicked, it triggers the `select_file_to_open` function, which  will parse the XML data
+
+        The button is placed near the top-left corner of the GUI window using the Tkinter 'place' method
+
+        Returns:
+            None
+        """
+    #open button
+    open_button = ttk.Button(
+    gui,
+    text='Open a AEMP2.0 xml File',
+    command=select_file_to_open # call the select file to open dialouge function
+    )
+    open_button.place(x=10, y=10)
+
+def CreateGUICSVSavebutton():
+    """
+        Creates and places a 'Save to CSV' button on the main GUI window.
+
+        This button allows the user to export the spatial joined machine & bedrock data to a CSV file.
+        When clicked, it calls the `save_dataframe_as_csv` function with the
+
+        The button is placed near the top-left corner of the GUI window using the Tkinter 'place' method
+
+        Returns:
+            None
+        """
+    #CSV Save button
+    global WriteDataframtoCSV
+    save_csv_button = ttk.Button(
+    gui,
+    text='Save data to CSV file',
+    command=lambda: save_dataframe_as_csv(joined_machine_pos_bedrock, xmlfilename)
+    )
+    save_csv_button.place(x=175, y=10)
+
+
 
 def select_file_to_open():
+    """
+        Opens a Tkinter file dialog for the user to select an XML file and processes it.
+        Extracts and stores only the base file name (excluding the full path) as a global variable `xmlfilename`.
+        The global filename will be used for storing a Folium map HTML file and CSV file elsewhere in the program
+        Calls `xml_parse()` function to parse the selected XML file and extract machine data.
+        Calls `load_bedrock_shapefile()` function to perform a spatial join with 250K bedrock data for Northern Ireland and the parsed machine data from the AEMP xml file.
+
+        Returns:
+            None
+        """
     global xmlfilename # define the  xmlfile name as the global one to be modified
+
+
     filetypes = (('XML files','*.xml'),)
     filename = fd.askopenfilename(title='Open XML file', initialdir='/',filetypes=filetypes)
     # Get just the file name and drop the extension
     filename = os.path.basename(filename) #only use the filename and not the full path
-
+    xmlfilename=filename#assign the opened filname to the global xmlfilename variable so it can be used by other functions
     # call XML Parse function to read the machine data
-    xml_pasrse(filename)
-    load_bedrock_shapefile()
+    xml_parse(filename)
+    load_bedrock_shapefile(filename)
 
 
 
+# save as dialouge to save
+def save_dataframe_as_csv(dfcsv, xmlfilename):
+    """
+        Opens a Tkinter 'file save as' dialog to save the processed xml and bedrock data as a CSV file.
+        The 'geometry' column  is removed as Latitude and Longitude data are included as separate columns
 
-def save_dataframe_as_csv(dfcsv):
+        Input Parameters:
+            dfcsv (GeoDataFrame): The final GeoDataFrame to be saved as a CSV file.
+            xmlfilename (str): The name of the filename that has been  used to parse the machine information  and
+            used for the map display
+        Returns:
+            None
+        """
+
+    filename = os.path.splitext(xmlfilename)[0]  # remove the .xml extension from the filename that was read in
     filetypes = (('CSV files', '*.csv'),)
-    filename = fd.asksaveasfilename(title='Save DataFrame as CSV', initialdir='/', defaultextension=".csv",filetypes=filetypes)
+    filename = fd.asksaveasfilename(title='Save DataFrame as CSV', initialdir='/', initialfile=filename, defaultextension=".csv",filetypes=filetypes)
 
     if filename:
         # Drop geometry column for writing to CSV file as we have columns for Lat & Long already
@@ -53,12 +149,23 @@ def save_dataframe_as_csv(dfcsv):
 
 #write the machine dataframe to the GUI frame
 def WriteDataframetoGUI(machinedataframe, joined_machine_pos_bedrock):
-    # Drop geometry column for display as we have columns for Lat & Long already
-    dfgui = joined_machine_pos_bedrock.drop(columns='geometry', errors='ignore')
+    """
+       Displays the processed spatially joined xml & bedrock data in a Tkinter Treeview widget inside the main GUI frame.
+       formats the column headers to be bold and left-aligned
+
+       Input Parameters:
+           machinedataframe (tk.Frame) The Tkinter frame where the Treeview widget will be placed.
+           joined_machine_pos_bedrock (GeoDataFrame). The GeoDataFrame containing machine data
+               and spatial join bedrock results, which will be displayed in the Treeview.
+
+       Returns:
+           None
+       """
+    dfgui = joined_machine_pos_bedrock.drop(columns='geometry', errors='ignore')# Drop geometry column for display as we have columns for Lat & Long already
 
     # adjust the style values to making headings bold and left justified
     style = ttk.Style()
-    style.configure("Treeview.Heading", font=('Arial', 10, 'bold'), anchor='w')  # 'w' = (west) left-justify
+    style.configure("Treeview.Heading", font=('Arial', 10, 'bold'), anchor='w')  # 'w' = (west) left-justified
 
     tree = ttk.Treeview(machinedataframe, columns=list(dfgui.columns), show='headings')
 
@@ -76,43 +183,33 @@ def WriteDataframetoGUI(machinedataframe, joined_machine_pos_bedrock):
 
 
 
-#create the main GUI window
-def CreateGUIframe():
 
-    gui.title('AEMP 2.0 Machine Viewer')
-    gui.resizable(False, False)
-    gui.geometry('1500x300')
-    gui.attributes('-topmost', True) #make sure the GUI fram is on top to ensure it is seen
+# main function of code to process the inputted xml file
+def xml_parse(filename):
+    """
+        Parses an AEMP 2.0 XML file and extracts machine equipment data into a global list.
 
-    machinedataframe=tk.Frame(gui,borderwidth=2, relief=tk.RIDGE)
-    machinedataframe.place(x=10, y=50, height=220, width=1450)
+This function reads the given XML file, extracts relevant information about
+each piece of equipment, including Original Equipment Manufacturer (OEM) name, model, serial number, geographic location,
+operating hours, fuel usage
 
+An estimated value for CO2 emissions for each machine is calculated based on fuel usage.
 
+The extracted data is stored as a dictionary in the global `machine_data` list.
 
+Error handling:
+    - If the file does not exist, a Tkinter messagebox error is shown.
+    - If the XML is malformed or cannot be parsed, a parse error is shown.
+    - Any other unexpected error during file reading will also trigger an error message.
+    - Errors while parsing individual 'Equipment' entries are caught and warned without halting the process.
 
+Input Parameters:
+    filename (str): The name of the XML file to be parsed.
 
-def CreateGUIfileopenbutton():
-    #open button
-    open_button = ttk.Button(
-    gui,
-    text='Open a AEMP2.0 xml File',
-    command=select_file_to_open # call the select file to open dialouge function
-    )
-    open_button.place(x=10, y=10)
+Returns:
+    None
 
-def CreateGUICSVSavebutton():
-    #CSV Save button
-    global WriteDataframtoCSV
-    save_csv_button = ttk.Button(
-    gui,
-    text='Save data to CSV file',
-    command=lambda: save_dataframe_as_csv(joined_machine_pos_bedrock)
-    )
-    save_csv_button.place(x=175, y=10)
-
-
-
-def xml_pasrse(filename):
+    """
     global machine_data
 
     if not os.path.exists(filename):
@@ -163,11 +260,11 @@ def xml_pasrse(filename):
                 fuelunits = fuelused.find('FuelUnits').text
                 fuelconsumed = fuelused.find('FuelConsumed').text
             else:
-                fuelunits  = 'Void'  # If no value is found in fuel branch the addin void
-                fuelconsumed ='0'  # If no value is found in fuel branch the addin void
+                fuelunits  = 'Void'  # If no value is found in fuel branch then add in void
+                fuelconsumed ='0'  # If no value is found in fuel branch then make value 0
 
             # Calculate the amount of Carbon Dioxide produced by each machine in tonnes
-            CO2_produced = (float(fuelconsumed) * 2.680)/1000 #Each litre of Diesel produces 2.68kg  of CO2 during combusion then divide by 1000 to get CO2 tonnes
+            CO2_produced = (float(fuelconsumed) * 2.680)/1000 #Each litre of Diesel produces 2.68kg  of CO2 during combusion then divide by  result by 1000 to get CO2 tonnes
 
             # Append data to the list
             machine_data.append({'OEM Name': OEMname, 'Model': model, 'Serial Number': serialNumber, 'Latitude': latitude, 'Longitude': longitude,'Operating Hours': hour,'Fuel Consumed (litres)': fuelconsumed, 'Fuel Unit': fuelunits, 'C02 output (tonne)': ("%.2f"%CO2_produced)})
@@ -177,9 +274,41 @@ def xml_pasrse(filename):
             continue
 
 
-def load_bedrock_shapefile():
+def load_bedrock_shapefile(filename):
+    """
+    Loads the Northern Ireland bedrock geological data and joins it with machine location data, then displays the results.
+
+    This function performs the following steps:
+    1. Converts the global `machine_data` into a GeoDataFrame with geographic points from Latitude and Longitude.
+
+    2. Loads the shapefile containing bedrock geological data for Northern Ireland.
+
+    3. Removes unnecessary columns from the bedrock dataset and sets the coordinate reference system.
+
+    4. Performs a spatial join to associate machine data points with bedrock polygons and adds in the type of bedrock each machine is situated on
+
+    5. Displays the joined data on the  Tkinter GUI and creates a Folium map showing machine positions and bedrock areas.
+
+    6. Saves the map as an HTML file named after the current XML  filename.
+
+        Error Handling:
+            - Displays popup error messages using `tkinter.messagebox` for various failures, including:
+                - Failure to create GeoDataFrame.
+                - Geometry creation issues, from missing or corrupted Lat / Long data from machine
+                - Shapefile loading or formatting errors.
+                - Issues during spatial join or map generation.
+            - Catches any unexpected errors and shows a general error message.
+
+        Input Parameters:
+        filename (str): The name of the loaded XML file that will be used to create name of Folium map for display and saving.
+
+        Returns:
+            None
+        """
+
     try:
         global joined_machine_pos_bedrock
+
 
         try:
             df = gpd.GeoDataFrame(machine_data)
@@ -235,7 +364,7 @@ def load_bedrock_shapefile():
         m = joined_machine_pos_bedrock.explore('Serial Number', marker_type='marker', popup=True, legend=False, color='red')
         m = bedrock.explore('Bedrock Type', m=m, cmap='viridis', opacity=0.01, legend=False,)
 
-        htmlfilename = os.path.splitext(xmlfilename)[0] + '.html'# remove the .xml extension from the filename that was read in and replace with .html for saving as a folium map
+        htmlfilename = os.path.splitext(filename)[0] + '.html'# remove the .xml extension from the filename that was read in and replace with .html for saving as a folium map
         print(htmlfilename)
         m.save(htmlfilename)
     except Exception as e: # catch any other unknown errors
@@ -244,16 +373,26 @@ def load_bedrock_shapefile():
     #m.show_in_browser()#
     webbrowser.open_new_tab(htmlfilename)  # This is non-blocking way to show map without locking out tkinter GUI window
 
+def create_folium_map():
+    """
+    Creates a global Folium map centered on Northern Ireland.
+    The map instance is stored in the global variable `m`, so it can
+    be used or updated elsewhere in the program.
 
+    Returns:
+        None
+    """
+    global m # let function know it is the global map instance being called
+    m = folium.Map(location=[54.6, -7], zoom_start=9) # centre the map around Northern Ireland
 
 
 #### Main progream starts here ###
-create_folium_map()
-machinedataframe = CreateGUIframe()
-CreateGUIfileopenbutton()
-CreateGUICSVSavebutton()
-# run the application gui loop to keep tkinter running
-gui.mainloop()
+machinedataframe = CreateGUIframe() # call function to create the main GUI interface using tkinter
+CreateGUIfileopenbutton() # call function to create tkinter File Open dialogue to open the AEMP 2.0 xml file
+CreateGUICSVSavebutton() # call function to create tkinter 'Save as' dialogue to save the processed xml file and bedrock data as a CSV file
+create_folium_map() # call function to initialise the folium map centred around Northern Ireland
+gui.protocol("WM_DELETE_WINDOW", gui_on_closing) # Bind the  X button to 'on_closing function' to unload the application gracefully
+gui.mainloop() # run the application gui loop to keep tkinter running to allow button press function to be acted on.
 
 ### End of code ###
 
