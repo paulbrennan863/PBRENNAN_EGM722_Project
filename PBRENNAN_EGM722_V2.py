@@ -13,10 +13,16 @@ from tkinter import ttk
 from tkinter import filedialog as fd
 import tkinter.messagebox as mb
 
+import rasterio as rio
+from rasterio import sample
+
 # define global variables and instances that are used throughout the program in different functions
 gui = tk.Tk() #define the tkinter main GUI frame instance
 xmlfilename = "" #preload with xml test filename
 machine_data = []  # global list for parsed xml data
+
+
+
 
 
 #create the main GUI window
@@ -35,7 +41,8 @@ def CreateGUIframe():
     gui.title('AEMP 2.0 Machine Viewer')
     gui.resizable(False, False)
     gui.geometry('1500x300')
-    gui.attributes('-topmost', True) #make sure the GUI fram is on top to ensure it is seen
+    # make sure the GUI form is on top to ensure it is seen
+    gui.attributes('-topmost', True)
 
     machinedataframe=tk.Frame(gui,borderwidth=2, relief=tk.RIDGE)
     machinedataframe.place(x=10, y=50, height=220, width=1450)
@@ -50,7 +57,8 @@ def gui_on_closing():
            None
        """
     if mb.askokcancel("Quit", "Do you really want to quit?"):
-        gui.destroy()  # This unloads the application window
+        # This unloads the application window in a controlled way
+        gui.destroy()
 
 
 
@@ -108,14 +116,17 @@ def select_file_to_open():
         Returns:
             None
         """
-    global xmlfilename # define the  xmlfile name as the global one to be modified
+    # define the  xmlfile name as the global one to be modified
+    global xmlfilename
 
 
     filetypes = (('XML files','*.xml'),)
     filename = fd.askopenfilename(title='Open XML file', initialdir='/',filetypes=filetypes)
     # Get just the file name and drop the extension
-    filename = os.path.basename(filename) #only use the filename and not the full path
-    xmlfilename=filename#assign the opened filname to the global xmlfilename variable so it can be used by other functions
+    filename = os.path.basename(filename)
+
+    # assign the opened filename to the global xmlfilename variable so it can be used by other functions
+    xmlfilename=filename
     # call XML Parse function to read the machine data
     xml_parse(filename)
     load_bedrock_shapefile(filename)
@@ -135,8 +146,8 @@ def save_dataframe_as_csv(dfcsv, xmlfilename):
         Returns:
             None
         """
-
-    filename = os.path.splitext(xmlfilename)[0]  # remove the .xml extension from the filename that was read in
+    # remove the .xml extension from the filename that was read in
+    filename = os.path.splitext(xmlfilename)[0]
     filetypes = (('CSV files', '*.csv'),)
     filename = fd.asksaveasfilename(title='Save DataFrame as CSV', initialdir='/', initialfile=filename, defaultextension=".csv",filetypes=filetypes)
 
@@ -161,7 +172,8 @@ def WriteDataframetoGUI(machinedataframe, joined_machine_pos_bedrock):
        Returns:
            None
        """
-    dfgui = joined_machine_pos_bedrock.drop(columns='geometry', errors='ignore')# Drop geometry column for display as we have columns for Lat & Long already
+    # Drop geometry column for display as we have columns for Lat & Long already
+    dfgui = joined_machine_pos_bedrock.drop(columns='geometry', errors='ignore')
 
     # adjust the style values to making headings bold and left justified
     style = ttk.Style()
@@ -231,14 +243,14 @@ Returns:
     # Parse the XML file#Iterate over each <Equipment> element in the AEMP XML File
     for equipment in root.findall('Equipment'):
         try:
-            # Find the location data
+            # Find  each piece of equipment in the xml file
             equipmentHeader = equipment.find('EquipmentHeader')
 
             if equipmentHeader is not None:
-
+                # Get the machine attribute data from the <equipmentHeader> tag
                 OEMname = equipmentHeader.find('OEMName').text
                 model = equipmentHeader.find('Model').text
-                serialNumber = equipmentHeader.find('EquipmentID').text  # Get the datetime attribute from the <Location> tag
+                serialNumber = equipmentHeader.find('EquipmentID').text
 
 
             # Find the location data
@@ -252,7 +264,8 @@ Returns:
             if cumulativeoperatinghours is not None:
                 hour = cumulativeoperatinghours.find('Hour').text
             else:
-                hour = 'Void'# If no value is found in fuel branch the add in void
+                # If no value is found in fuel branch the add in void
+                hour = 'Void'
 
             # Find the Total fuel used by machine
             fuelused = equipment.find('FuelUsed')
@@ -264,7 +277,8 @@ Returns:
                 fuelconsumed ='0'  # If no value is found in fuel branch then make value 0
 
             # Calculate the amount of Carbon Dioxide produced by each machine in tonnes
-            CO2_produced = (float(fuelconsumed) * 2.680)/1000 #Each litre of Diesel produces 2.68kg  of CO2 during combusion then divide by  result by 1000 to get CO2 tonnes
+            # Each litre of Diesel produces 2.68kg  of CO2 during combusion then divide by  result by 1000 to get CO2 tonnes
+            CO2_produced = (float(fuelconsumed) * 2.680)/1000
 
             # Append data to the list
             machine_data.append({'OEM Name': OEMname, 'Model': model, 'Serial Number': serialNumber, 'Latitude': latitude, 'Longitude': longitude,'Operating Hours': hour,'Fuel Consumed (litres)': fuelconsumed, 'Fuel Unit': fuelunits, 'C02 output (tonne)': ("%.2f"%CO2_produced)})
@@ -311,6 +325,7 @@ def load_bedrock_shapefile(filename):
 
 
         try:
+            #create geodataframe from the machine data
             df = gpd.GeoDataFrame(machine_data)
         except Exception as e:
             tk.messagebox.showerror("GeoDataFrame Error", f"Could not create GeoDataFrame: {e}")
@@ -326,12 +341,15 @@ def load_bedrock_shapefile(filename):
 
 
         try:
+            #load in the NI bedrock shape file
             bedrock = gpd.read_file('Datafiles/NI_250k_bedrock_RCS_D_clipped.shp')
         except Exception as e:
+            # flag any error that  happen when loading the shapefile dataset
             tk.messagebox.showerror("Shapefile Error", f"Could not load bedrock shapefile: {e}")
             return
 
         try:
+            # Drop columns that are not needed, to try and keep things tidy
             bedrock.drop(
                 columns=['LEX', 'LEX_D', 'LEX_RCS', 'RCS', 'RCS_X', 'RANK', 'BED_EQ', 'BED_EQ_D', 'MB_EQ', 'MB_EQ_D', 'FM_EQ',
                         'FM_EQ_D', 'SUBGP_EQ', 'SUBGP_EQ_D', 'GP_EQ', 'GP_EQ_D', 'SUPGP_EQ', 'SUPGP_EQ_D', 'MAX_TIME_D',
@@ -343,35 +361,95 @@ def load_bedrock_shapefile(filename):
             bedrock.to_crs(crs='epsg:4326', inplace=True)
             bedrock.rename(columns={"RCS_D": "Bedrock Type"}, inplace=True)
         except Exception as e:
+            # flag any error that  happens when dropping columns from the shapefile dataset
             tk.messagebox.showerror("Bedrock Cleanup Error", f"Could not clean up bedrock data columns: {e}")
             return
 
         try:
-            geometry = gpd.points_from_xy(df['Longitude'], df['Latitude'], crs='epsg:4326')
-            machine_positions = gpd.GeoDataFrame(df[['OEM Name','Serial Number', 'Model', 'Operating Hours', 'Fuel Consumed (litres)', 'C02 output (tonne)', 'Latitude', 'Longitude']], # add in the main columns from geo data frame of AEMP xml file
-                                geometry=gpd.points_from_xy(df['Longitude'], df['Latitude']), # set the geometry using points_from_xy
-                                crs='epsg:4326') # set the CRS using a text representation of the EPSG code for WGS84 lat/lon
-            # Perform the spatial join, using 'contains' to find bedrock polygons that contain the machine position point
+
+            # Original GeoDataFrame in WGS84
+            df['geometry'] = df.apply(lambda row: Point(float(row['Longitude']), float(row['Latitude'])), axis=1)
+            machine_positions = gpd.GeoDataFrame(
+                df[['OEM Name', 'Serial Number', 'Model', 'Operating Hours',
+                    'Fuel Consumed (litres)', 'C02 output (tonne)', 'Latitude', 'Longitude']],
+                geometry=df['geometry'],
+                crs='EPSG:4326'
+            )
+
+
+
+
+            #Project to Irish Grid (EPSG:29903) to a metres values rather than lat/long
+            machine_positions_metres = machine_positions.to_crs(epsg=29903)
+            # Extract elevation values for machine positions from the NI elevation raster
+            elevation_values = extract_point_elevations(machine_positions_metres)
+
+
+
+            # spatially join machine positions and bedrock. Find which bedrock polygons that 'contain' the machine position
             joined_machine_pos_bedrock = gpd.sjoin(machine_positions, bedrock, predicate='within')
+            # Drop columns that are not needed, to try and keep things tidy
             joined_machine_pos_bedrock.drop(columns=['index_right', 'Shape_Leng', 'Shape_Area'], axis=1, inplace=True)
+
+
+            # Add elevation values to the spatial joined result
+            joined_machine_pos_bedrock['Elevation (m)'] = elevation_values
+
         except Exception as e:
+            # flag any errors on the spatial join
             tk.messagebox.showerror("Spatial Join Error", f"Could not perform spatial join: {e}")
             return
 
-
+        # Populate the GUI data frame with the collated geodataframe results
         WriteDataframetoGUI(machinedataframe, joined_machine_pos_bedrock)
 
+        #Add the machine positions markers to the Folium map, no legend needed to avoid clutter
         m = joined_machine_pos_bedrock.explore('Serial Number', marker_type='marker', popup=True, legend=False, color='red')
-        m = bedrock.explore('Bedrock Type', m=m, cmap='viridis', opacity=0.01, legend=False,)
 
+        # Add the bedrock shapefile to the Folium map, no legend needed to avoid clutter. Make the bedrock semi transparent, to allow underlyinf features on map to be seen
+        m = bedrock.explore('Bedrock Type', m=m, cmap='viridis', opacity=0.01, legend=False,)
         htmlfilename = os.path.splitext(filename)[0] + '.html'# remove the .xml extension from the filename that was read in and replace with .html for saving as a folium map
-        print(htmlfilename)
+        #save the html file to the directory
         m.save(htmlfilename)
-    except Exception as e: # catch any other unknown errors
+
+        # catch any other unknown errors
+    except Exception as e:
         tk.messagebox.showerror("Unknown Error", f"An unexpected error occurred: {e}")
 
     #m.show_in_browser()#
     webbrowser.open_new_tab(htmlfilename)  # This is non-blocking way to show map without locking out tkinter GUI window
+
+
+def extract_point_elevations(machine_pos_df, raster_path='Datafiles/ni_dtm.tif'):
+    """
+    Extract elevation values from the NI Elevation raster for the machine point locations.
+
+    Args:
+        machine_pos_df (GeoDataFrame): GeoDataFrame with point geometries for machine positions (in same CRS as raster).
+        raster_path (str): Path to the DTM raster file.
+
+    Returns:
+        List of elevation values.
+    """
+
+    #Open the Elevations raster file
+    with rio.open(raster_path) as raster_dataset2:
+        # Ensure CRS matches, if not make them the same
+        if machine_pos_df.crs != raster_dataset2.crs:
+            machine_pos_df = machine_pos_df.to_crs(raster_dataset2.crs)
+
+        # Get the machine position coordinate from the geometry dataframe
+        machine_coords = [(point.x, point.y) for point in machine_pos_df.geometry]
+
+        # Sample the elevation raster at the machine  coordinates
+        elevations = list(raster_dataset2.sample(machine_coords))
+        # Flatten list of single-band arrays (divide the value by 10, for some reason the values in the elevation raster are too high)
+        elevation_values = [val[0] /10 for val in elevations]  # val[0] since it's usually 1 band
+
+    #return  elevations values for each of the machine positions
+    return elevation_values
+
+
 
 def create_folium_map():
     """
@@ -382,17 +460,31 @@ def create_folium_map():
     Returns:
         None
     """
-    global m # let function know it is the global map instance being called
-    m = folium.Map(location=[54.6, -7], zoom_start=9) # centre the map around Northern Ireland
+    # let function know it is the global map instance being called
+    global m
+    # centre the map around Northern Ireland
+    m = folium.Map(location=[54.6, -7], zoom_start=9)
 
 
 #### Main progream starts here ###
+
+# call function to create the main GUI interface using tkinter
 machinedataframe = CreateGUIframe() # call function to create the main GUI interface using tkinter
-CreateGUIfileopenbutton() # call function to create tkinter File Open dialogue to open the AEMP 2.0 xml file
-CreateGUICSVSavebutton() # call function to create tkinter 'Save as' dialogue to save the processed xml file and bedrock data as a CSV file
-create_folium_map() # call function to initialise the folium map centred around Northern Ireland
-gui.protocol("WM_DELETE_WINDOW", gui_on_closing) # Bind the  X button to 'on_closing function' to unload the application gracefully
-gui.mainloop() # run the application gui loop to keep tkinter running to allow button press function to be acted on.
+
+# call function to create tkinter File Open dialogue to open the AEMP 2.0 xml file
+CreateGUIfileopenbutton()
+
+# call function to create tkinter 'Save as' dialogue to save the processed xml file and bedrock data as a CSV file
+CreateGUICSVSavebutton()
+
+# call function to initialise the folium map centred around Northern Ireland
+create_folium_map()
+
+# Bind the  X button to 'on_closing function' to unload the application gracefully
+gui.protocol("WM_DELETE_WINDOW", gui_on_closing)
+
+# run the application gui loop to keep tkinter running to allow button press function to be acted on.
+gui.mainloop()
 
 ### End of code ###
 
