@@ -1,0 +1,17 @@
+name: egm722
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - rasterio
+  - ipywidgets
+  - pyepsg
+  - jupyterlab
+  - python
+  - folium
+  - geopandas
+  - cartopy[version='>=0.21']
+  - console_shortcut
+  - ipympl
+  - rasterstats
+prefix: D:\Users\PaulB\anaconda3\envs\egm722
