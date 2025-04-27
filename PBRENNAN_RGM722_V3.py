@@ -322,6 +322,8 @@ Returns:
 
     """
     global machine_data
+    # clear the machine data list at the start of each parse to purge out previous data
+    machine_data.clear()
 
     if not os.path.exists(filename):
         mb.showerror("File Not Found", f"Cannot find file:\n{filename}")
@@ -364,7 +366,7 @@ Returns:
                 latitude = location.find('Latitude').text
                 longitude = location.find('Longitude').text
 
-            # Find the Engine Running data
+            # Find the Engine Hours data
             cumulativeoperatinghours = equipment.find('CumulativeOperatingHours')
             if cumulativeoperatinghours is not None:
                 hour = cumulativeoperatinghours.find('Hour').text
