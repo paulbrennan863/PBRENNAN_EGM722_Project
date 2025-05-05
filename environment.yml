@@ -1,10 +1,10 @@
-name: telematics-gis-project
+name: PBRENNAN_EGM722_project
 author: Paul Brennan
 channels:
   - defaults
   - conda-forge
 dependencies:
-  - python=3.10
+  - python=3.12
   - numpy
   - pandas
   - geopandas
