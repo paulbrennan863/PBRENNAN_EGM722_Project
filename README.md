@@ -6,15 +6,13 @@ The files for the project are hosted on a public GitHub repository which can be 
 
 You can either:
 
-- **Clone the repository** using the following command in Windows Command Prompt:
+1) Clone the repository using the following command in Windows Command Prompt:
 
-> \`\`\`console
->
-> git clone https://github.com/paulbrennan863/PBRENNAN_EGM722_Project.git
->
-> \`\`\`
+```console
+git clone https://github.com/paulbrennan863/PBRENNAN_EGM722_Project.git
+```
 
-- **Alternatively download the files manually** from the GitHub repository as a ZIP file.
+2) Alternatively download the files manually from the GitHub repository as a ZIP file.
 
 **IMPORTANT:** If downloading manually, ensure the ‘Datafiles’ folder and its contents remain in the same directory as the ‘PBRENNAN_EGM722_V3.py’ script file.
 
@@ -26,29 +24,23 @@ To replicate the project environment and install all dependencies, a **Conda env
 
 To set up the environment in Windows Command Prompt, run:
 
-> \`\`\`console
->
-> *<span class="mark">conda env create -f environment.yml</span>*
->
-> *\`\`\`*
+```console
+conda env create -f environment.yml</span>*
+```
 
 Once the environment is created, activate it using the command:
 
-> \`\`\`console
-
-*<span class="mark">conda activate \<environment_name\></span>*
-
-*\`\`\`*
+```console
+conda activate \<environment_name\></span>*
+```
 
 (Replace \<environment_name\> with the actual name of the environment you created)
 
 To confirm all libraries and dependencies files have been installed run the following command:
 
-*<span class="mark">\`\`\`console</span>*
-
-*<span class="mark">conda list</span>*
-
-*\`\`\`*
+```console
+conda list</span>*
+```
 
 This will display a list of the installed packages within the Conda environment and their version numbers. Ensure that the libraries in **(Figure 1.)** are shown. If any libraries are missing they can be installed through the Anaconda App or through PIP.
 
@@ -100,11 +92,9 @@ To start the program directly with the CLI, navigate to the folder where the pro
 
 To start the python script type the following command (**Figure 6**.) Further details of the application operation are provided in section 3.0.
 
-\`\`\`console
-
+```console
 python PBRENNAN_EGM722_V3.py
-
-## \`\`\`
+```
 
 <img src="images/media/image6.png" style="width:5.09337in;height:0.60364in" />
 
