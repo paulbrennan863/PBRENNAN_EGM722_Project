@@ -25,13 +25,13 @@ To replicate the project environment and install all dependencies, a **Conda env
 To set up the environment in Windows Command Prompt, run:
 
 ```console
-conda env create -f environment.yml</span>*
+conda env create -f environment.yml
 ```
 
 Once the environment is created, activate it using the command:
 
 ```console
-conda activate \<environment_name\></span>*
+conda activate <environment_name>
 ```
 
 (Replace \<environment_name\> with the actual name of the environment you created)
@@ -39,7 +39,7 @@ conda activate \<environment_name\></span>*
 To confirm all libraries and dependencies files have been installed run the following command:
 
 ```console
-conda list</span>*
+conda list
 ```
 
 This will display a list of the installed packages within the Conda environment and their version numbers. Ensure that the libraries in **(Figure 1.)** are shown. If any libraries are missing they can be installed through the Anaconda App or through PIP.
