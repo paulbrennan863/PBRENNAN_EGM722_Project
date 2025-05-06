@@ -1,0 +1,19 @@
+name: PBRENNAN_EGM722_project
+author: Paul Brennan
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.12
+  - numpy
+  - pandas
+  - geopandas
+  - shapely
+  - folium
+  - rasterio
+  - requests
+  - tkinter
+  - matplotlib  # sometimes needed for tkinter backends
+  - pip
+  - pip:
+    - urllib3
