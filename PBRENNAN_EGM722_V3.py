@@ -1,3 +1,5 @@
+# V3 with added API pull from Orbcomm site
+
 import os
 import xml.etree.ElementTree as ET
 import csv
@@ -12,14 +14,25 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog as fd
 import tkinter.messagebox as mb
+from tkinter import simpledialog
 
 import rasterio as rio
 from rasterio import sample
 
-# define global variables and instances that are used throughout the program in different functions
-gui = tk.Tk() #define the tkinter main GUI frame instance
-xmlfilename = "" #preload with xml test filename
-machine_data = []  # global list for parsed xml data
+import urllib3
+import requests
+from requests.auth import HTTPBasicAuth
+
+# define global variables that are used throughout the program in different functions
+
+# define the tkinter main GUI frame instance
+gui = tk.Tk()
+
+# preload with xml test filename
+xmlfilename = ""
+
+# global list for parsed xml data
+machine_data = []
 
 
 
@@ -56,6 +69,7 @@ def gui_on_closing():
        Returns:
            None
        """
+
     if mb.askokcancel("Quit", "Do you really want to quit?"):
         # This unloads the application window in a controlled way
         gui.destroy()
@@ -103,6 +117,48 @@ def CreateGUICSVSavebutton():
     )
     save_csv_button.place(x=175, y=10)
 
+def CreateGUI_APIbutton():
+    """
+        Creates and places a 'Load from API' button on the main GUI window.
+
+        This button allows the user to pull a AEMP xml from an external RESTful API.
+        When clicked, it calls the `load_from_API` function
+
+        The button is placed near the top-right corner of the GUI window using the Tkinter 'place' method
+
+        Returns:
+            None
+        """
+    #API Load button
+    global WriteDataframtoCSV
+    api_load_button = ttk.Button(
+    gui,
+    text='Load External API data',
+    command=lambda: load_RESTfulAPI()
+    )
+    #place the button beside the others
+    api_load_button.place(x=320, y=10)
+
+
+def get_API_credentials():
+    """
+       Prompt the user to enter API credentials with 'simpledialogs' input boxes.
+       for API endpoint, username, and password.
+       The password input is masked with "*" for security.
+
+       Returns:
+                Three string tuple containing:
+               - endpoint (str): The API endpoint URL.
+               - username (str): The username for API authentication.
+               - password (str): The password for API authentication.
+       """
+    # Ask for API endpoint, username and password
+    endpoint = simpledialog.askstring("Login", "Enter API endpoint:")
+    username = simpledialog.askstring("Login", "Enter username:")
+    password = simpledialog.askstring("Login", "Enter password:", show='*')
+    print(endpoint)
+    #return the entered details back to calling dunction for parsing
+    return endpoint, username, password
 
 
 def select_file_to_open():
@@ -131,9 +187,52 @@ def select_file_to_open():
     xml_parse(filename)
     load_bedrock_shapefile(filename)
 
+def load_RESTfulAPI():
+    """
+            This function pulls data from an external telematics portal in a AEMP 2.0 format. The file is in xml format
+            There is a response value back from the website to acknowledge if the login and read has been successful.
+            The returned data is in text format. It is saved as a file to allow it to be parsed by the 'xml_parse()' and load_bedrock_shapefile()` functions
+            to perform a spatial join with 250K bedrock data for Northern Ireland and the parsed machine data from the AEMP xml file.
+
+            As this links to the company portal, the login  details are provided in the assignment "Part 1 The How-to guide" pdf file
+            The login account expires 31/05/2025
+
+            Returns:
+                None
+            """
+
+    # call function to return the API endpoint, username and password for external site
+    url, username, password = get_API_credentials()
+
+    # using the request function send the login details to the telematics provider RESTful API portal
+    private_url_response = requests.get(url=url, verify=False, auth=HTTPBasicAuth(username, password))
+
+    # populate xmlscript with the response content back from the API read
+    xmlscript = private_url_response.content
 
 
-# save as dialouge to save
+    # read the  response status back from the API read
+    restfulAPIresponce = private_url_response.status_code
+
+    # if there is a non-OK response (200) from the API, notify the error and return
+    if  restfulAPIresponce != 200:
+        mb.showerror("REST API Error", f"Invalid API response:\n{restfulAPIresponce}")
+        return
+
+
+
+    # setup the API responce xml data to be writtem to a file
+    with open("APIresponse.xml", "w", encoding="utf-8") as f:
+        f.write(private_url_response.text)
+    # save the file as 'APIresponse.xml' and assign to the filename variable
+    filename = os.path.basename("APIresponse.xml")
+
+    # call the xml parse function to extract the machine data
+    xml_parse(filename)
+    # load the bedrosk data
+    load_bedrock_shapefile(filename)
+
+# save as dialog to save
 def save_dataframe_as_csv(dfcsv, xmlfilename):
     """
         Opens a Tkinter 'file save as' dialog to save the processed xml and bedrock data as a CSV file.
@@ -223,6 +322,8 @@ Returns:
 
     """
     global machine_data
+    # clear the machine data list at the start of each parse to purge out previous data
+    machine_data.clear()
 
     if not os.path.exists(filename):
         mb.showerror("File Not Found", f"Cannot find file:\n{filename}")
@@ -231,6 +332,12 @@ Returns:
     try:
         xmlparse = ET.parse(filename)
         root = xmlparse.getroot()
+
+        # Remove namespaces from flee tag name (these cause the xml parse to crash)
+        for elem in root.iter():
+            if '}' in elem.tag:
+                elem.tag = elem.tag.split('}', 1)[1]  # Keep only the tag name
+
 
     except ET.ParseError as e:
         mb.showerror("XML Parse Error", f"Error while parsing XML:\n{e}")
@@ -259,7 +366,7 @@ Returns:
                 latitude = location.find('Latitude').text
                 longitude = location.find('Longitude').text
 
-            # Find the Engine Running data
+            # Find the Engine Hours data
             cumulativeoperatinghours = equipment.find('CumulativeOperatingHours')
             if cumulativeoperatinghours is not None:
                 hour = cumulativeoperatinghours.find('Hour').text
@@ -361,7 +468,7 @@ def load_bedrock_shapefile(filename):
             bedrock.to_crs(crs='epsg:4326', inplace=True)
             bedrock.rename(columns={"RCS_D": "Bedrock Type"}, inplace=True)
         except Exception as e:
-            # flag any error that  happens when dropping columns from the shapefile dataset
+            # flag any error that happens when dropping columns from the shapefile dataset
             tk.messagebox.showerror("Bedrock Cleanup Error", f"Could not clean up bedrock data columns: {e}")
             return
 
@@ -477,13 +584,16 @@ CreateGUIfileopenbutton()
 # call function to create tkinter 'Save as' dialogue to save the processed xml file and bedrock data as a CSV file
 CreateGUICSVSavebutton()
 
+# call function to create tkinter 'API Load' button to pull xml data in form external RESTfulAPI account
+CreateGUI_APIbutton()
+
 # call function to initialise the folium map centred around Northern Ireland
 create_folium_map()
 
 # Bind the  X button to 'on_closing function' to unload the application gracefully
 gui.protocol("WM_DELETE_WINDOW", gui_on_closing)
 
-# run the application gui loop to keep tkinter running to allow button press function to be acted on.
+# run the application gui loop to keep tkinter running to allow button press functions to be acted on.
 gui.mainloop()
 
 ### End of code ###

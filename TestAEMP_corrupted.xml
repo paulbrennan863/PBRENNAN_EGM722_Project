@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Fleet xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.aemp.org/fleet"   snapshotTime="2025-04-24T20:23:35.0000670+00:00" version="0">
+    <Equip>
+        <EquipmentHeader>
+            <UnitInstallDateTime>2022-03-08T16: 31: 44.0000000+00: 00</UnitInstallDateTime>
+            <OEMName>Ecotec</OEMName>
+            <Model>TDS820E</Model>
+            <EquipmentID>TRXPBTEST29876534</EquipmentID>
+            <SerialNumber>TRXPBTEST29876534</SerialNumber>
+        </EquipmentHeader>
+        <Location datetime="2025-04-24T20:01:40.0000000+00:00">
+            <Latitude>54.533627</Latitude>
+            <Longitude>-6.815667</Longitude>
+        </Location>
+    </Equipment>
+    <Equipment>
+        <EquipmentHeader>
+            <UnitInstallDateTime>2022-03-08T16: 31: 44.0000000+00: 00</UnitInstallDateTime>
+            <OEMName>Ecotec</OEMName>
+            <Model>TDS820E</Model>
+            <EquipmentID>TRXPBTEST29876534</EquipmentID>
+            <SerialNumber>TRXPBTEST29876534</SerialNumber>
+        </EquipmentHeader>
+        <Location datetime="2025-04-24T20:03:57.0000000+00:00">
+            <Latitude>54.533638</Latitude>
+            <Longitude>-6.8157344</Longitude>
+        </Location>
+    </Equipment>
+    <Equipment>
+        <EquipmentHeader>
+            <UnitInstallDateTime>2022-03-08T16: 31: 44.0000000+00: 00</UnitInstallDateTime>
+            <OEMName>Ecotec</OEMName>
+            <Model>TDS820E</Model>
+            <EquipmentID>TRXPBTEST29876534</EquipmentID>
+            <SerialNumber>TRXPBTEST29876534</SerialNumber>
+        </EquipmentHeader>
+        <Location datetime="2025-04-24T20:08:49.0000000+00:00">
+            <Latitude>54.533638</Latitude>
+            <Longitude>-6.8157344</Longitude>
+        </Location>
+    </Equipment>
+    <Equipment>
+        <EquipmentHeader>
+            <UnitInstallDateTime>2022-03-08T16: 31: 44.0000000+00: 00</UnitInstallDateTime>
+            <OEMName>Ecotec</OEMName>
+            <Model>TDS820E</Model>
+            <EquipmentID>TRXPBTEST29876534</EquipmentID>
+            <SerialNumber>TRXPBTEST29876534</SerialNumber>
+        </EquipmentHeader>
+        <Location datetime="2025-04-24T20:08:49.0000000+00:00">
+            <Latitude>54.533638</Latitude>
+            <Longitude>-6.8157344</Longitude>
+        </Location>
+    </Equipment>
+    <Equipment>
+        <EquipmentHeader>
+            <UnitInstallDateTime>2022-03-08T16: 31: 44.0000000+00: 00</UnitInstallDateTime>
+            <OEMName>Ecotec</OEMName>
+            <Model>TDS820E</Model>
+            <EquipmentID>TRXPBTEST29876534</EquipmentID>
+            <SerialNumber>TRXPBTEST29876534</SerialNumber>
+        </EquipmentHeader>
+        <Location datetime="2025-04-24T20:08:49.0000000+00:00">
+            <Latitude>54.533638</Latitude>
+            <Longitude>-6.8157344</Longitude>
+        </Location>
+    </Equipment>
+    <Equipment>
+        <EquipmentHeader>
+            <UnitInstallDateTime>2022-03-08T16: 31: 44.0000000+00: 00</UnitInstallDateTime>
+            <OEMName>Ecotec</OEMName>
+            <Model>TDS820E</Model>
+            <EquipmentID>TRXPBTEST29876534</EquipmentID>
+            <SerialNumber>TRXPBTEST29876534</SerialNumber>
+        </EquipmentHeader>
+        <Location datetime="2025-04-24T20:08:53.0000000+00:00">
+            <Latitude>54.533646</Latitude>
+            <Longitude>-6.815776</Longitude>
+        </Location>
+        <EngineStatus datetime="2025-04-24T20:08:53.0000000+00:00">
+            <EngineNumber>0</EngineNumber>
+            <Running>false</Running>
+        </EngineStatus>
+    </Equipment>
+    <Equipment>
+        <EquipmentHeader>
+            <UnitInstallDateTime>2022-03-08T16: 31: 44.0000000+00: 00</UnitInstallDateTime>
+            <OEMName>Ecotec</OEMName>
+            <Model>TDS820E</Model>
+            <EquipmentID>TRXPBTEST29876534</EquipmentID>
+            <SerialNumber>TRXPBTEST29876534</SerialNumber>
+        </EquipmentHeader>
+        <Location datetime="2025-04-24T20:08:59.0000000+00:00">
+            <Latitude>54.533646</Latitude>
+            <Longitude>-6.815776</Longitude>
+        </Location>
+        <EngineStatus datetime="2025-04-24T20:08:59.0000000+00:00">
+            <EngineNumber>0</EngineNumber>
+            <Running>true</Running>
+        </EngineStatus>
+    </Equipment>
+    <PageInfo PageSize="500" RecordsCount="7" HasNext="false" NextPageNo="-1"/>
+</Fleet>
