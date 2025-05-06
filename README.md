@@ -90,7 +90,7 @@ To start the program directly with the CLI, navigate to the folder where the pro
 
 ***Figure 5.** Ensure the CLI is running the appropriate Conda environment and changed to the project directory*
 
-To start the python script type the following command (**Figure 6**.) Further details of the application operation are provided in section 3.0.
+To start the python script type the following command (**Figure 6**.) Further details of the application operation are provided in the How To Guide Section 3.0.
 
 ```console
 python PBRENNAN_EGM722_V3.py
